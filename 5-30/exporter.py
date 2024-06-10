@@ -51,13 +51,11 @@ class BVHExporter:
             file.write(f"{indent}}}\n")
 
 # 使用例
-# multiprocessingの使用に伴うスクリプトの再実行を防ぐ
-if __name__ == "__main__":
-    loader = BVHLoader('/Users/yu/Desktop/岩本さん/BEAT/1_wayne_1_11_12.bvh')
-    loader.load()
+loader = BVHLoader('/Users/yu/Desktop/岩本さん/BEAT/1_wayne_1_11_12.bvh')
+loader.load()
 
-    if loader.root is None:
-        raise ValueError("Root node is None. Cannot export BVH file.")
+if loader.root is None:
+    raise ValueError("Root node is None. Cannot export BVH file.")
 
-    exporter = BVHExporter(loader.root, loader.frames, loader.frame_time)
-    exporter.export('/Users/yu/Desktop/岩本さん/BEAT/exported_file.bvh')
+exporter = BVHExporter(loader.root, loader.frames, loader.frame_time)
+exporter.export('/Users/yu/Desktop/岩本さん/BEAT/exported_file.bvh')
