@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.spatial.transform import Rotation as R
 import matplotlib.animation as animation
+import os
 
 # bvhファイルのロード
 # ノードのクラス
@@ -18,7 +19,6 @@ class Node:
 
 # ローダークラスの定義
 class BVHLoader:
-
 
     # 初期化
     def __init__(self, file_path):
@@ -152,42 +152,47 @@ def draw_skeleton(ax, node, parent_position=None):
         draw_skeleton(ax, child, node.position)
 
 # ノードの位置と回転を更新する関数
-def update_node_position(node, frame_data, index, parent_position, parent_rotation, is_root=False):
-    if is_root:
+def update_node_position(node, frame_data, index, parent_position=[0,0,0], parent_rotation=[0,0,0], is_root=False):
+
+    if node.channels:
+        rot_order = list() 
+        axis_order = ''
+        for axis in node.channels:
+            if axis == "Xrotation" and index < len(frame_data): 
+                rot_order.append(frame_data[index])
+                index += 1
+                axis_order += 'x'
+            if axis == "Yrotation" and index < len(frame_data):
+                rot_order.append(frame_data[index])
+                index += 1
+                axis_order += 'y'
+            if axis == "Zrotation" and index < len(frame_data):
+                rot_order.append(frame_data[index])
+                index += 1
+                axis_order += 'z'
+
         # ルートノードの場合の処理
-        x_pos, y_pos, z_pos = frame_data[:3]
-        x_rot, y_rot, z_rot = frame_data[3:6]
+        if is_root:
+            x_pos, y_pos, z_pos = frame_data[:3]
 
-        # 初期位置の設定
-        node.position = np.array([x_pos, y_pos, z_pos])
-        
-        # 初期回転の計算
-        global_rotation = R.from_euler('xyz', [x_rot, y_rot, z_rot], degrees=True)
-        
-    else:
-        if node.channels:
-            x_rot, y_rot, z_rot = 0, 0, 0
-
-            if "Xrotation" in node.channels and index < len(frame_data): 
-                x_rot = frame_data[index]
-                index += 1
-            if "Yrotation" in node.channels and index < len(frame_data):
-                y_rot = frame_data[index]
-                index += 1
-            if "Zrotation" in node.channels and index < len(frame_data):
-                z_rot = frame_data[index]
-                index += 1
-
+            # 初期位置の設定
+            node.position = np.array([x_pos, y_pos, z_pos])
+            
+            # 初期回転の計算
+            global_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
+        # Joint
+        else:
             # 回転の計算
-            local_rotation = R.from_euler('xyz', [x_rot, y_rot, z_rot], degrees=True)
+            local_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
             global_rotation = parent_rotation * local_rotation
 
             # 位置の計算
             node.position = parent_position + parent_rotation.apply(np.array(node.offset))
 
-        else:
-            global_rotation = parent_rotation
-            node.position = parent_position + parent_rotation.apply(np.array(node.offset))
+    # Site
+    else:
+        global_rotation = parent_rotation
+        node.position = parent_position + parent_rotation.apply(np.array(node.offset))
 
     for child in node.children:
         index = update_node_position(child, frame_data, index, node.position, global_rotation)
@@ -204,17 +209,13 @@ def update_skeleton(num, frames, ax, root):
     ax.set_zlabel('Z')
     
     frame_data = frames[num]
-    parent_position = frame_data[:3]
-    parent_rotation = R.from_euler('xyz', frame_data[3:6], degrees=True)
-    
-    index = 6
-    update_node_position(root, frame_data, index, parent_position, parent_rotation,  is_root=True)
-    
-    draw_skeleton(ax, root, parent_position)
-
+    index = 3
+    update_node_position(root, frame_data, index, is_root=True)
+    draw_skeleton(ax, root, root.position)
 
 # BVHファイルのロード
-loader = BVHLoader("/Users/yu/Desktop/岩本さん/BEAT/1_wayne_1_11_12.bvh")
+path = os.path.abspath(os.path.join('../data/1_wayne_0_1_8.bvh'))
+loader = BVHLoader(path)
 loader.load()
 
 root = loader.root
@@ -228,11 +229,6 @@ ax.set_zlim(-100, 100)
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
-
-# 初期フレームから親ノードの初期位置を取得
-# initial_frame = frames[0]
-# parent_position = initial_frame[:3]
-# initialize_skeleton(ax, root, frames)
 
 # アニメーションの設定
 ani = animation.FuncAnimation(fig, update_skeleton, frames=len(frames), fargs=(frames, ax, root), interval=loader.frame_time * 1000)
