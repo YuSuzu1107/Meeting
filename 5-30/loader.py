@@ -1,5 +1,3 @@
-from multiprocessing import Pool
-
 # ノードのクラス
 class Node:
 
@@ -131,14 +129,8 @@ class BVHLoader:
                 continue
             frame_lines.append(line.strip())
 
-        # multiprocessingの使用
-        with Pool() as pool:
-            self.frames = pool.map(self.parse_frame, frame_lines)
-
-        print(f"Parsed {len(self.frames)} frames with frame time: {self.frame_time}")
+        self.frames = [self.parse_frame(line) for line in frame_lines]
 
 # 使用例
-# multiprocessingの使用に伴うスクリプトの再実行を防ぐ
-if __name__ == "__main__":
-    loader = BVHLoader('/Users/yu/Desktop/岩本さん/BEAT/1_wayne_1_11_12.bvh')
-    loader.load()
+loader = BVHLoader('/Users/yu/Desktop/岩本さん/BEAT/1_wayne_1_11_12.bvh')
+loader.load()
