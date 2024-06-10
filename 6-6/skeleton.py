@@ -231,5 +231,5 @@ ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 
 # アニメーションの設定
-ani = animation.FuncAnimation(fig, update_skeleton, frames=len(frames), fargs=(frames, ax, root), interval=loader.frame_time * 1000)
+ani = animation.FuncAnimation(fig, update_skeleton, frames=len(frames), fargs=(frames, ax, root), interval=loader.frame_time * 50)
 plt.show()
