@@ -92,6 +92,12 @@ def find_parent(joint, root):
             return result
     return None
 
+# レストポーズにおけるグローバル座標の計算
+def compute_rest_pose_global_positions(joint, parent_position=np.zeros(3)):
+    joint.global_rest_position = parent_position + joint.offset
+    for child in joint.children:
+        compute_rest_pose_global_positions(child, joint.global_rest_position)
+        
 # 重みの計算
 def calculate_weights(vertices, joints, root, c=16):
     num_vertices = len(vertices)
