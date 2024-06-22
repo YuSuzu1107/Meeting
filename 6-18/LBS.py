@@ -201,7 +201,7 @@ def main():
     # 各フレームごとに変換を行い、OBJファイルとして出力
     for frame_idx, frame in enumerate(frames):
         # 通常フレームのグローバル変換行列の計算
-        _, _, global_transforms = compute_global_transform_matrix(bvh_loader.root, frame, 0, global_transforms={})
+        _, _, global_transforms = compute_global_transform_matrix(bvh_loader.root, frame, 3, global_transforms={})
         M_matrices = global_transforms
 
         # BとMの行列の積の計算 (M @ B)
