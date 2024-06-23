@@ -48,6 +48,6 @@ def generate_interpolated_frames(file1, file2, num_frames, output_dir):
 file1 = '/Users/yu/Desktop/岩本さん/data_for_skinning/LBS1/_250.obj'
 file2 = '/Users/yu/Desktop/岩本さん/data_for_skinning/LBS1/_0.obj'
 num_frames = 100  # 生成したいフレーム数
-output_dir = '/Users/yu/Desktop/岩本さん/Meeting/6-24 SLERP/SLERP 1-200'
+output_dir = '/Users/yu/Desktop/岩本さん/Meeting/6-24 SLERP/SLERP'
 
 generate_interpolated_frames(file1, file2, num_frames, output_dir)
