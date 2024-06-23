@@ -19,11 +19,11 @@ def slerp(v0, v1, t):
     dot_product = np.clip(dot_product, -1.0, 1.0)
     omega = np.arccos(dot_product)
     if np.abs(omega) < 1e-10:
-        return (1.0 - t) * u0 + t * u1
+        return (1.0 - t) * v0 + t * v1
     sin_omega = np.sin(omega)
-    u0_component = np.sin((1.0 - t) * omega) / sin_omega
-    u1_component = np.sin(t * omega) / sin_omega
-    return u0_component * v0 + u1_component * v1
+    v0_component = np.sin((1.0 - t) * omega) / sin_omega
+    v1_component = np.sin(t * omega) / sin_omega
+    return v0_component * v0 + v1_component * v1
 
 # 中間フレームの生成
 def generate_interpolated_frames(file1, file2, num_frames, output_dir):
