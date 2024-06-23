@@ -41,13 +41,13 @@ def generate_interpolated_frames(file1, file2, num_frames, output_dir):
             interpolated_vertex = slerp(v1, v2, t)
         
             interpolated_vertices.append(interpolated_vertex)
-        output_file = f"{output_dir}/_{i + 251}.obj"
+        output_file = f"{output_dir}/_{i + 25}.obj"
         OBJExporter(output_file, interpolated_vertices, faces1, normals1, texture_coords1, objects1, smoothing_groups1, lines1)
 
 # 使用例
-file1 = '/Users/yu/Desktop/岩本さん/data_for_skinning/LBS1/_250.obj'
+file1 = '/Users/yu/Desktop/岩本さん/data_for_skinning/LBS1/_249.obj'
 file2 = '/Users/yu/Desktop/岩本さん/data_for_skinning/LBS1/_0.obj'
-num_frames = 100  # 生成したいフレーム数
+num_frames = 100  # 任意のフレーム数で補間
 output_dir = '/Users/yu/Desktop/岩本さん/Meeting/6-24 SLERP/SLERP'
 
 generate_interpolated_frames(file1, file2, num_frames, output_dir)
