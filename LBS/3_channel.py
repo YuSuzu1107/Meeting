@@ -47,7 +47,7 @@ def compute_global_transform_matrix(joint, frame_data, index, parent_position=np
                 axis_order += 'y'
             if axis == "Zrotation" and index < len(frame_data):
                 rot_order.append(frame_data[index])
-                index += 4
+                index += 1
                 axis_order += 'z'
         
         # ルートノードの場合の処理
@@ -174,9 +174,9 @@ def linear_blend_skinning(vertices, combined_transforms, weights, indices):
 
 # メイン関数
 def main():
-    bvh_file_path = '/Users/yu/Desktop/岩本さん/data_for_skinning/1_wayne_0_1_1.bvh'
-    obj_file_path = '/Users/yu/Desktop/岩本さん/data_for_skinning/Male.obj'
-    output_file_path = '/Users/yu/Desktop/岩本さん/data_for_skinning/LBS/'
+    bvh_file_path = '../data/1_wayne_0_1_1.bvh'
+    obj_file_path = '../data/Male.obj'
+    output_file_path = '../data/LBS_3_channel/'
 
     # bvhファイルの読み込み
     bvh_loader = BVHLoader(bvh_file_path)
