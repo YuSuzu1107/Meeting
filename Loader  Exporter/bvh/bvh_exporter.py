@@ -51,11 +51,11 @@ class BVHExporter:
             file.write(f"{indent}}}\n")
 
 # 使用例
-loader = BVHLoader('../BEAT/1_wayne_1_11_12.bvh')
+loader = BVHLoader('../data/1_wayne_1_11_12.bvh')
 loader.load()
 
 if loader.root is None:
     raise ValueError("Root node is None. Cannot export BVH file.")
 
 exporter = BVHExporter(loader.root, loader.frames, loader.frame_time)
-exporter.export('../BEAT/exported_file.bvh')
+exporter.export('../data/exported_file.bvh')
