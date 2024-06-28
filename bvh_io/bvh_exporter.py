@@ -1,4 +1,4 @@
-from loader import BVHLoader, Node
+from bvh_loader import BVHLoader, Node
 
 class BVHExporter:
 
