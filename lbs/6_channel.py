@@ -275,7 +275,7 @@ def main():
     rest_pose_frames = set_rest_pose(bvh_loader)
     
     # レストポーズフレームのグローバル変換行列の計算
-    _, _, rest_pose_transforms = compute_global_transform_matrix(bvh_loader.root, rest_pose_frames[0], 3, global_transforms={})
+    _, _, rest_pose_transforms = compute_global_transform_matrix_1(bvh_loader.root, rest_pose_frames[0], 3, global_transforms={})
     rest_pose_inverse_transforms = {k: np.linalg.inv(v) for k, v in rest_pose_transforms.items()}
 
     # 行列Bをjoint_indexと関連付けて定義
@@ -284,7 +284,7 @@ def main():
     # 各フレームごとに変換を行い、OBJファイルとして出力
     for frame_idx, frame in enumerate(frames):
         # 通常フレームのグローバル変換行列の計算
-        _, _, global_transforms = compute_global_transform_matrix(bvh_loader.root, frame, 3, global_transforms={})
+        _, _, global_transforms = compute_global_transform_matrix_2(bvh_loader.root, frame, 3, global_transforms={})
         M_matrices = global_transforms
 
         # BとMの行列の積の計算 (M @ B)
