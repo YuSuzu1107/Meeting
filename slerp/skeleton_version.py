@@ -105,7 +105,7 @@ def generate_interpolated_frames_bvh(file, start_frame_count, end_frame_count, n
     end_frames = bvh.frames[-end_frame_count:]
     frame1_positions, frame1_rotations = get_local_positions_and_rotations(bvh, start_frames[-1])
     frame2_positions, frame2_rotations = get_local_positions_and_rotations(bvh, end_frames[0])
-    print(frame1_positions)
+
     all_interpolated_frames = []
 
     # 最初の100フレームを追加
