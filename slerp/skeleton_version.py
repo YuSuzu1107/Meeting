@@ -8,21 +8,9 @@ def lerp(v0, v1, t):
     return (1 - t) * np.array(v0) + t * np.array(v1)
 
 # SLERP関数
-def slerp(p0, p1, t):
-    p0 = np.array(p0)
-    p1 = np.array(p1)
-    
-    # ベクトルを正規化
-    norm_p0 = np.linalg.norm(p0)
-    norm_p1 = np.linalg.norm(p1)
-    
-    if norm_p0 == 0:
-        return p1 * t
-    if norm_p1 == 0:
-        return p0 * (1 - t)
-    
-    q0 = p0 / norm_p0
-    q1 = p1 / norm_p1
+def slerp(q0, q1, t):
+    q0 = np.array(q0)
+    q1 = np.array(q1)
 
     # クォータニオンのドット積を計算
     dot_product = np.dot(q0, q1)
@@ -40,14 +28,14 @@ def slerp(p0, p1, t):
     
     # 角度が小さい場合、線形補間にフォールバック
     if np.abs(omega) < 1e-10:
-        return (1.0 - t) * p0 + t * p1
+        return (1.0 - t) * q0 + t * q1
     
     # 補間の計算
     sin_omega = np.sin(omega)
     q0_component = np.sin((1.0 - t) * omega) / sin_omega
     q1_component = np.sin(t * omega) / sin_omega
     
-    return q0_component * p0 + q1_component * p1
+    return q0_component * q0 + q1_component * q1
 
 # ジョイントのローカル位置と回転を取得する関数
 def get_local_positions_and_rotations(bvh, frame):
@@ -121,10 +109,20 @@ def generate_interpolated_frames_bvh(file, start_frame_count, end_frame_count, n
             interpolated_frame_data.extend(interpolated_position)
             
             if rot1 and rot2:
-                # 自分で定義したSLERP関数を使ったクォータニオンの補間
-                interpolated_rotation = slerp(rot1.as_quat(), rot2.as_quat(), t)
-                interpolated_rotation = R.from_quat(interpolated_rotation).as_euler('xyz', degrees=True)
-                interpolated_frame_data.extend(interpolated_rotation)
+                # オイラー角からローカルな回転行列を構築
+                q0 = rot1.as_quat()
+                q1 = rot2.as_quat()
+                
+                # SLERP関数を使ったクォータニオンの補間
+                interpolated_quat = slerp(q0, q1, t)
+
+                # クォータニオンを回転行列に逆変換
+                interpolated_rot = R.from_quat(interpolated_quat)
+
+                # 回転行列をオイラー角に変換
+                interpolated_rotation_euler = interpolated_rot.as_euler('xyz', degrees=True)
+                
+                interpolated_frame_data.extend(interpolated_rotation_euler)
             
         all_interpolated_frames.append(interpolated_frame_data)
 
