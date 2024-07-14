@@ -1,3 +1,5 @@
+import numpy as np
+
 # ノードのクラス
 class Node:
 
@@ -7,6 +9,7 @@ class Node:
         self.offset = None
         self.channels = []
         self.children = []
+        self.position = np.zeros(3)
 
 # ローダークラスの定義
 class BVHLoader:

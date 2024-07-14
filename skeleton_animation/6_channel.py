@@ -147,9 +147,7 @@ def draw_skeleton(ax, node, parent_position=None):
         ax.plot([parent_position[0], node.position[0]], 
                 [parent_position[1], node.position[1]], 
                 [parent_position[2], node.position[2]], 'b-')
-        #print(parent_position)
-        #print(node.name)
-        #print(node.position)
+
     for child in node.children:
         draw_skeleton(ax, child, node.position)
 
@@ -195,19 +193,25 @@ def update_node_position(node, frame_data, index, parent_position=[0,0,0], paren
 
         # Joint の場合の処理
         else:
+            # ジョイントが6チャンネルの場合
+            if len(pos_order) == 3:
+                local_position = np.array(pos_order)
+            else:
+                local_position = np.array(node.offset)
+    
             # 回転の計算
             local_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
             global_rotation = parent_rotation * local_rotation
 
             # 位置の計算
-            node.position = parent_position + parent_rotation.apply(np.array(pos_order))
+            node.position = parent_position + parent_rotation.apply(local_position)
+    
     
     # End Site の処理
     else:
         global_rotation = parent_rotation
         node.position = parent_position + parent_rotation.apply(np.array(node.offset))
-    #print(node.name)
-    #print(node.position)
+
     for child in node.children:
         index = update_node_position(child, frame_data, index, node.position, global_rotation)
     return index
