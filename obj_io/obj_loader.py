@@ -41,7 +41,3 @@ def OBJLoader(file_path):
                 smoothing_groups.append(parts[1])
 
     return vertices, faces, normals, texture_coords, objects, smoothing_groups, lines
-
-# 使用例
-file_path = '../data/Male.obj'
-vertices, faces, normals, texture_coords, objects, smoothing_groups, lines = OBJLoader(file_path)

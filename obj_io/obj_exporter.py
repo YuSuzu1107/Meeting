@@ -1,5 +1,3 @@
-from obj_loader import OBJLoader
-
 def OBJExporter(file_path, vertices, faces, normals, texture_coords, objects, smoothing_groups, lines):
     with open(file_path, 'w') as file:
         v_index = 0
@@ -40,13 +38,3 @@ def OBJExporter(file_path, vertices, faces, normals, texture_coords, objects, sm
                 s_index += 1
             else:
                 file.write(line + '\n')
-
-# 使用例
-input_file_path = '../data/Male.obj'
-output_file_path = '../data/Male_exported.obj'
-
-# OBJファイルをパース
-vertices, faces, normals, texture_coords, objects, smoothing_groups, lines = OBJLoader(input_file_path)
-
-# パースしたデータを新しいOBJファイルにエクスポート
-OBJExporter(output_file_path, vertices, faces, normals, texture_coords, objects, smoothing_groups, lines)
