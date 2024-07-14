@@ -132,7 +132,3 @@ class BVHLoader:
             frame_lines.append(line.strip())
 
         self.frames = [self.parse_frame(line) for line in frame_lines]
-
-# 使用例
-loader = BVHLoader('../data/1_wayne_1_11_12.bvh')
-loader.load()

@@ -1,5 +1,3 @@
-from bvh_loader import BVHLoader, Node
-
 class BVHExporter:
 
     # 初期化
@@ -49,13 +47,3 @@ class BVHExporter:
                 self.write_hierarchy(file, child, level + 1)
             
             file.write(f"{indent}}}\n")
-
-# 使用例
-loader = BVHLoader('../data/1_wayne_1_11_12.bvh')
-loader.load()
-
-if loader.root is None:
-    raise ValueError("Root node is None. Cannot export BVH file.")
-
-exporter = BVHExporter(loader.root, loader.frames, loader.frame_time)
-exporter.export('../data/exported_file.bvh')
