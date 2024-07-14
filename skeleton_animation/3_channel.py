@@ -214,7 +214,7 @@ def update_skeleton(num, frames, ax, root):
     draw_skeleton(ax, root, root.position)
 
 # BVHファイルのロード
-path = os.path.abspath(os.path.join('../data/1_wayne_0_1_8.bvh'))
+path = os.path.abspath(os.path.join('../data/perfume.bvh'))
 loader = BVHLoader(path)
 loader.load()
 
