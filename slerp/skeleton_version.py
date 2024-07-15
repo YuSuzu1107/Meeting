@@ -115,15 +115,13 @@ def generate_interpolated_frames_bvh(file, start_frame_count, end_frame_count, n
                 print(np.linalg.norm(q0),np.linalg.norm(q1))
                 # 自分で定義したSLERP関数を使ったクォータニオンの補間
                 interpolated_quat = slerp(q0, q1, t)
-                #print(f"t={t}, interpolated_quat={interpolated_quat}")  # デバッグ用出力
 
                 # クォータニオンを回転行列に逆変換
                 interpolated_rot = R.from_quat(interpolated_quat)
-                #print(f"t={t}, interpolated_rot={interpolated_rot.as_matrix()}")  # 回転行列のデバッグ用出力
 
                 # 回転行列をオイラー角に変換
-                interpolated_rotation_euler = interpolated_rot.as_euler('xyz', degrees=True)
-                #print(f"t={t}, interpolated_rotation_euler={interpolated_rotation_euler}")  # デバッグ用出力
+                interpolated_rotation_euler = interpolated_rot.as_euler('zyx', degrees=True)
+                interpolated_rotation_euler = interpolated_rotation_euler[::-1]
                 
                 interpolated_frame_data.extend(interpolated_rotation_euler)
             
