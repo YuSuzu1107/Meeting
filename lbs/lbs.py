@@ -1,8 +1,5 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from bvh_loader import BVHLoader, Node
-from obj_loader import OBJLoader
-from obj_exporter import OBJExporter
 
 # ジョイントの取得
 def get_all_joints(joint):
@@ -31,12 +28,22 @@ def set_rest_pose(bvh_loader):
         rest_pose_frames.append(rest_frame)
     return rest_pose_frames
 
-# グローバル変換行列を計算
-def compute_global_transform_matrix(joint, frame_data, index, parent_position=np.array([0,0,0]), parent_rotation=R.from_euler('xyz', [0,0,0], degrees=True), is_root=False, joint_index=0, global_transforms={}):
+# グローバル変換行列を計算(レストポーズ用)
+def compute_global_transform_matrix_1(joint, frame_data, index, parent_position=np.array([0,0,0]), parent_rotation=R.from_euler('xyz', [0,0,0], degrees=True), is_root=False, joint_index=0, global_transforms={}):
     if joint.channels:
+        pos_order = []
         rot_order = []
         axis_order = ''
         for axis in joint.channels:
+            if axis == "Xposition" and index < len(frame_data):
+                pos_order.append(frame_data[index])
+                index += 1
+            if axis == "Yposition" and index < len(frame_data):
+                pos_order.append(frame_data[index])
+                index += 1
+            if axis == "Zposition" and index < len(frame_data):
+                pos_order.append(frame_data[index])
+                index += 1
             if axis == "Xrotation" and index < len(frame_data): 
                 rot_order.append(frame_data[index])
                 index += 1
@@ -52,7 +59,7 @@ def compute_global_transform_matrix(joint, frame_data, index, parent_position=np
         
         # ルートノードの場合の処理
         if is_root:
-            x_pos, y_pos, z_pos = frame_data[:3]
+            x_pos, y_pos, z_pos = pos_order
 
             # 初期位置の設定
             joint.position = np.array([x_pos, y_pos, z_pos])
@@ -84,7 +91,82 @@ def compute_global_transform_matrix(joint, frame_data, index, parent_position=np
     
     for child in joint.children:
         joint_index += 1
-        index, joint_index, global_transforms = compute_global_transform_matrix(child, frame_data, index, joint.position, global_rotation, joint_index=joint_index, global_transforms=global_transforms)
+        index, joint_index, global_transforms = compute_global_transform_matrix_1(child, frame_data, index, joint.position, global_rotation, joint_index=joint_index, global_transforms=global_transforms)
+        
+    return index, joint_index, global_transforms
+
+# グローバル変換行列を計算
+def compute_global_transform_matrix_2(joint, frame_data, index, parent_position=np.array([0,0,0]), parent_rotation=R.from_euler('xyz', [0,0,0], degrees=True), is_root=False, joint_index=0, global_transforms={}):
+    if joint.channels:
+        pos_order = []
+        rot_order = []
+        axis_order = ''
+        for axis in joint.channels:
+            if axis == "Xposition" and index < len(frame_data):
+                pos_order.append(frame_data[index])
+                index += 1
+            if axis == "Yposition" and index < len(frame_data):
+                pos_order.append(frame_data[index])
+                index += 1
+            if axis == "Zposition" and index < len(frame_data):
+                pos_order.append(frame_data[index])
+                index += 1
+            if axis == "Xrotation" and index < len(frame_data): 
+                rot_order.append(frame_data[index])
+                index += 1
+                axis_order += 'x'
+            if axis == "Yrotation" and index < len(frame_data):
+                rot_order.append(frame_data[index])
+                index += 1
+                axis_order += 'y'
+            if axis == "Zrotation" and index < len(frame_data):
+                rot_order.append(frame_data[index])
+                index += 1
+                axis_order += 'z'
+        
+        # ルートノードの場合の処理
+        if is_root:
+            x_pos, y_pos, z_pos = pos_order
+
+            # 初期位置の設定
+            joint.position = np.array([x_pos, y_pos, z_pos])
+            
+            # 初期回転の計算
+            global_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
+        else:
+            # ジョイントが6チャンネルの場合
+            if len(pos_order) == 3:
+                local_position = np.array(pos_order)
+            else:
+                local_position = np.array(joint.offset)
+                
+            # 回転の計算
+            local_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
+            global_rotation = parent_rotation * local_rotation
+
+            # 位置の計算
+            joint.position = parent_position + parent_rotation.apply(local_position)
+
+    # End Site の処理
+    else:
+        global_rotation = parent_rotation
+        joint.position = parent_position + parent_rotation.apply(np.array(joint.offset))
+
+    # グローバル変換行列の計算
+    translation = np.eye(4)
+    translation[:3, 3] = joint.position
+    
+    rotation_matrix = np.eye(4)
+    rotation_matrix[:3, :3] = global_rotation.as_matrix()
+    
+    global_transform = translation @ rotation_matrix
+
+    # グローバル変換行列とそのインデックスを保存
+    global_transforms[joint_index] = global_transform
+    
+    for child in joint.children:
+        joint_index += 1
+        index, joint_index, global_transforms = compute_global_transform_matrix_2(child, frame_data, index, joint.position, global_rotation, joint_index=joint_index, global_transforms=global_transforms)
         
     return index, joint_index, global_transforms
 
@@ -140,7 +222,7 @@ def calculate_weights(vertices, joints, root, c=16):
             t = np.clip(t, 0, 1)
             P = P0 + t * V1
             d = np.linalg.norm(vertex - P)
-            if not np.isnan(d):
+            if not np.isnan(d) and j != 0:
                 joint_distances.append((d, j))
 
         # 距離が小さい順に並び替え
@@ -171,54 +253,3 @@ def linear_blend_skinning(vertices, combined_transforms, weights, indices):
             blended_vertex += weight * transformed_vertex
         transformed_vertices[i] = blended_vertex
     return transformed_vertices
-
-# メイン関数
-def main():
-    bvh_file_path = '../data/1_wayne_0_1_1.bvh'
-    obj_file_path = '../data/Male.obj'
-    output_file_path = '../data/LBS_3_channel/'
-
-    # bvhファイルの読み込み
-    bvh_loader = BVHLoader(bvh_file_path)
-    bvh_loader.load()
-
-    # objファイルの読み込み
-    vertices, faces, normals, texture_coords, objects, smoothing_groups, lines = OBJLoader(obj_file_path)
-
-    # ジョイントのリストを取得
-    joints = get_all_joints(bvh_loader.root)
-    
-    # 重みの計算
-    weights, indices = calculate_weights(vertices, joints, bvh_loader.root)
-
-    # フレームデータの取得
-    frames = bvh_loader.frames
-
-    # レストポーズフレームの取得
-    rest_pose_frames = set_rest_pose(bvh_loader)
-    
-    # レストポーズフレームのグローバル変換行列の計算
-    _, _, rest_pose_transforms = compute_global_transform_matrix(bvh_loader.root, rest_pose_frames[0], 3, global_transforms={})
-    rest_pose_inverse_transforms = {k: np.linalg.inv(v) for k, v in rest_pose_transforms.items()}
-
-    # 行列Bをjoint_indexと関連付けて定義
-    B_matrices = rest_pose_inverse_transforms
-
-    # 各フレームごとに変換を行い、OBJファイルとして出力
-    for frame_idx, frame in enumerate(frames):
-        # 通常フレームのグローバル変換行列の計算
-        _, _, global_transforms = compute_global_transform_matrix(bvh_loader.root, frame, 3, global_transforms={})
-        M_matrices = global_transforms
-
-        # BとMの行列の積の計算 (M @ B)
-        combined_transforms = {index: M_matrices[index] @ B_matrices[index] for index in M_matrices}
-
-        # リニアブレンドスキニングを適用して頂点を変換
-        transformed_vertices = linear_blend_skinning(vertices, combined_transforms, weights, indices)
-
-        # OBJファイルの出力
-        OBJExporter(f"{output_file_path}_{frame_idx}.obj", transformed_vertices, faces, normals, texture_coords, objects, smoothing_groups, lines)
-
-
-if __name__ == "__main__":
-    main()
