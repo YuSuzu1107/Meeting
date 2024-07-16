@@ -14,8 +14,8 @@ from bvh_io.bvh_loader import BVHLoader, Node
 from skeleton_animation import update_skeleton
 
 # BVHファイルのロード
-path = os.path.abspath(os.path.join('./data/1_wayne_0_1_1.bvh'))
-loader = BVHLoader(path)
+file_path = os.path.abspath(os.path.join('./data/1_wayne_0_1_1.bvh'))
+loader = BVHLoader(file_path)
 loader.load()
 
 root = loader.root
