@@ -8,7 +8,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # 親ディレクトリをsys.pathに追加
 sys.path.append(parent_dir)
 
-from bvh_io.bvh_loader import BVHLoader 
+from bvh_io.bvh_loader import BVHLoader, Node
 from bvh_io.bvh_exporter import BVHExporter
 
 # 線形補間関数（位置用）
