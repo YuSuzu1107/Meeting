@@ -1,8 +1,16 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from bvh_loader import BVHLoader, Node
-from obj_loader import OBJLoader
-from obj_exporter import OBJExporter
+import sys
+import os
+
+# 一つ上の階層のパスを取得
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# 親ディレクトリをsys.pathに追加
+sys.path.append(parent_dir)
+
+from bvh_io.bvh_loader import BVHLoader, Node
+from obj_io.obj_loader import OBJLoader
+from obj_io.obj_exporter import OBJExporter
 
 # ジョイントの取得
 def get_all_joints(joint):
@@ -137,12 +145,20 @@ def compute_global_transform_matrix_2(joint, frame_data, index, parent_position=
             # 初期回転の計算
             global_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
         else:
+            # ジョイントが6チャンネルの場合
+            if len(pos_order) == 3:
+                local_position = np.array(pos_order)
+            else:
+                local_position = np.array(joint.offset)
+                
             # 回転の計算
             local_rotation = R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True)
             global_rotation = parent_rotation * local_rotation
 
             # 位置の計算
-            joint.position = parent_position + parent_rotation.apply(np.array(pos_order))
+            joint.position = parent_position + parent_rotation.apply(local_position)
+
+    # End Site の処理
     else:
         global_rotation = parent_rotation
         joint.position = parent_position + parent_rotation.apply(np.array(joint.offset))

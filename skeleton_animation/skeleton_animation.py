@@ -67,7 +67,6 @@ def update_node_position(node, frame_data, index, parent_position=[0,0,0], paren
             # 位置の計算
             node.position = parent_position + parent_rotation.apply(local_position)
     
-    
     # End Site の処理
     else:
         global_rotation = parent_rotation
