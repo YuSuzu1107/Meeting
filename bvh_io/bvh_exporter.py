@@ -22,7 +22,7 @@ class BVHExporter:
             file.write(f"Frame Time: {self.frame_time}\n")
             
             for frame in self.frames:
-                frame_str = " ".join(map(str, frame))
+                frame_str = " ".join([f"{val:.6f}" for val in frame])
                 file.write(frame_str + "\n")
 
     # HIERARCHYの具体的な記述法
@@ -30,19 +30,20 @@ class BVHExporter:
         if node is None:
             return
         
-        indent = '  ' * level
+        indent = '    ' * level
         if node.name == "End Site":
             file.write(f"{indent}End Site\n")
             file.write(f"{indent}{{\n")
-            file.write(f"{indent}  OFFSET {' '.join(map(str, node.offset))}\n")
+            offset_str = ' '.join([f"{val:.6f}" for val in node.offset])
+            file.write(f"{indent}    OFFSET {offset_str}\n")
             file.write(f"{indent}}}\n")
         else:
             node_type = "ROOT" if level == 0 else "JOINT"
             file.write(f"{indent}{node_type} {node.name}\n")
             file.write(f"{indent}{{\n")
-            file.write(f"{indent}  OFFSET {' '.join(map(str, node.offset))}\n")
-            file.write(f"{indent}  CHANNELS {len(node.channels)} {' '.join(node.channels)}\n")
-            
+            offset_str = ' '.join([f"{val:.6f}" for val in node.offset])
+            file.write(f"{indent}    OFFSET {offset_str}\n")
+            file.write(f"{indent}    CHANNELS {len(node.channels)} {' '.join(node.channels)}\n")
             for child in node.children:
                 self.write_hierarchy(file, child, level + 1)
             
