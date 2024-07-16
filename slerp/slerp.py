@@ -121,7 +121,7 @@ def generate_interpolated_frames_bvh(bvh_file_path, start_frame_count, end_frame
                 # オイラー角からローカルな回転行列を構築
                 q0 = rot1.as_quat()
                 q1 = rot2.as_quat()
-                print(np.linalg.norm(q0),np.linalg.norm(q1))
+    
                 # 自分で定義したSLERP関数を使ったクォータニオンの補間
                 interpolated_quat = slerp(q0, q1, t)
 
