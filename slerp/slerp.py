@@ -9,7 +9,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 
 # 他のファイルにある関数のimport
-from bvh_io.bvh_loader import BVHLoader, Node
+from bvh_io.bvh_loader import BVHLoader, Node, get_local_positions_and_rotations
 from bvh_io.bvh_exporter import BVHExporter
 
 # 線形補間関数（位置用）
@@ -45,53 +45,6 @@ def slerp(q0, q1, t):
     q1_component = np.sin(t * omega) / sin_omega
     
     return q0_component * q0 + q1_component * q1
-
-# ジョイントのローカル位置と回転を取得する関数
-def get_local_positions_and_rotations(bvh, frame):
-    positions = []
-    rotations = []
-    index = 0
-
-    def collect_positions(node, frame_data):
-        nonlocal index
-        if node.name == "End Site":
-            return
-        
-        pos_order = []
-        rot_order = []
-        axis_order = ''
-        
-        for axis in node.channels:
-            if axis == "Xposition" and index < len(frame_data):
-                pos_order.append(frame_data[index])
-                index += 1
-            if axis == "Yposition" and index < len(frame_data):
-                pos_order.append(frame_data[index])
-                index += 1
-            if axis == "Zposition" and index < len(frame_data):
-                pos_order.append(frame_data[index])
-                index += 1
-            if axis == "Xrotation" and index < len(frame_data):
-                rot_order.append(frame_data[index])
-                index += 1
-                axis_order += 'x'
-            if axis == "Yrotation" and index < len(frame_data):
-                rot_order.append(frame_data[index])
-                index += 1
-                axis_order += 'y'
-            if axis == "Zrotation" and index < len(frame_data):
-                rot_order.append(frame_data[index])
-                index += 1
-                axis_order += 'z'
-        
-        positions.append(np.array(pos_order))
-        rotations.append(R.from_euler(axis_order[::-1], rot_order[::-1], degrees=True))
-        
-        for child in node.children:
-            collect_positions(child, frame_data)
-
-    collect_positions(bvh.root, frame)
-    return positions, rotations
 
 # 中間フレームの生成
 def generate_interpolated_frames_bvh(bvh_file_path, start_frame_count, end_frame_count, num_interpolated_frames, output_file):
